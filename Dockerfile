@@ -15,6 +15,8 @@ RUN echo "@community http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /et
     mkdir -p /var/run/sshd && \
     rm -f /etc/ssh/ssh_host_*key*
 
+RUN sed -i 's/^CREATE_MAIL_SPOOL=yes/CREATE_MAIL_SPOOL=no/' /etc/default/useradd
+
 COPY sshd_config /etc/ssh/sshd_config
 COPY entrypoint /
 
