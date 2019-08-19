@@ -110,6 +110,16 @@ function createUser() {
     fi
 }
 
+# Make subdirectories if configured
+if [ -n "$SFTP_MKDIRS" ]; then
+    # Append users from environment variable to final config
+    dirsFromEnv=($SFTP_MKDIRS) # as array
+    for dir in "${dirsFromEnv[@]}"; do
+        echo "Making directory: [$dir]"
+        mkdir -p "/home/$user/$dir"
+    done
+fi
+
 # Allow running other programs, e.g. bash
 if [[ -z "$1" || "$1" =~ $reArgsMaybe ]]; then
     startSshd=true
