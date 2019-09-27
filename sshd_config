@@ -12,6 +12,11 @@ UseDNS no
 PermitRootLogin no
 X11Forwarding no
 AllowTcpForwarding no
+PermitEmptyPasswords no
+MaxAuthTries 3
+MaxSessions 3
+MaxStartups 3
+LoginGraceTime 15
 
 # Force sftp and chroot jail
 Subsystem sftp internal-sftp
