@@ -1,0 +1,20 @@
+[sshd]
+enabled     = true
+logpath     = %(sshd_log)s
+maxretry    = 3
+findtime    = 10m
+bantime     = 1h
+
+[sshd-ddos]
+enabled     = true
+logpath     = %(sshd_log)s
+maxretry    = 3
+findtime    = 10m
+bantime     = 1h
+
+[sshd-root]
+enabled     = true
+logpath     = %(sshd_log)s
+filter      = sshd-root
+maxretry    = 0
+bantime     = -1

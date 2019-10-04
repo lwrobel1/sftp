@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+syslogd -f /etc/syslog.conf &&
+
 # Paths
 userConfPath="/etc/sftp/users.conf"
 userConfPathLegacy="/etc/sftp-users.conf"
@@ -75,17 +77,6 @@ function createUser() {
     chown root:root /home/$user
     chmod 755 /home/$user
 
-    # Make subdirectories if configured
-    if [ -n "$SFTP_MKDIRS" ]; then
-        # Append users from environment variable to final config
-        dirsFromEnv=($SFTP_MKDIRS) # as array
-        for dir in "${dirsFromEnv[@]}"; do
-            dirToMake="/home/$user/$dir"
-            echo "Making directory: [$dirToMake]"
-            sudo -u $user mkdir -p $dirToMake
-        done
-    fi
-
     # Retrieving user id to use it in chown commands instead of the user name
     # to avoid problems on alpine when the user name contains a '.'
     uid="$(id -u $user)"
@@ -117,6 +108,17 @@ function createUser() {
             else
                 log "Directory already exists: $dirPath"
             fi
+        done
+    fi
+
+    # Make subdirectories if configured
+    if [ -n "$SFTP_MKDIRS" ]; then
+        # Append users from environment variable to final config
+        dirsFromEnv=($SFTP_MKDIRS) # as array
+        for dir in "${dirsFromEnv[@]}"; do
+            dirToMake="/home/$user/$dir"
+            echo "Making directory: [$dirToMake]"
+            sudo -u $user mkdir -p $dirToMake
         done
     fi
 }
@@ -193,7 +195,9 @@ fi
 
 if $startSshd; then
     log "Executing sshd"
-    exec /usr/sbin/sshd -D -e
+    sudo iptables -L &&
+    fail2ban-server -b -x start &&
+    exec /usr/sbin/sshd -D
 else
     log "Executing $@"
     exec "$@"
