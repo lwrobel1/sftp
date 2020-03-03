@@ -73,7 +73,11 @@ function createUser() {
     fi
 
     useradd $useraddOptions $user
+
+    log "Creating directory: [/home/$user]"
     mkdir -p /home/$user
+
+    log "Setting [root:root] as owner of [/home/$user]"
     chown root:root /home/$user
     chmod 755 /home/$user
 
@@ -102,12 +106,15 @@ function createUser() {
         for dirPath in ${dirArgs[@]}; do
             dirPath="/home/$user/$dirPath"
             if [ ! -d "$dirPath" ]; then
-                log "Creating directory: $dirPath"
-                mkdir -p $dirPath
+                log "Creating directory: [$dirPath]"
+                doas mkdir -p $dirPath
+                log "Setting [$uid:users] as owner of [$dirPath]"
                 chown -R $uid:users $dirPath
             else
-                log "Directory already exists: $dirPath"
+                log "Directory already exists: [$dirPath]"
             fi
+            log "Setting [root:root] as owner of [$dirPath]"
+            chown root:root $dirPath
         done
     fi
 
@@ -117,8 +124,10 @@ function createUser() {
         dirsFromEnv=($SFTP_MKDIRS) # as array
         for dir in "${dirsFromEnv[@]}"; do
             dirToMake="/home/$user/$dir"
-            echo "Making directory: [$dirToMake]"
-            sudo -u $user mkdir -p $dirToMake
+            log "Creating directory: [$dirToMake]"
+            doas mkdir -p $dirToMake
+            log "Setting [$uid:users] as owner of [$dirToMake]"
+            chown -R $uid:users $dirToMake
         done
     fi
 }
@@ -195,7 +204,7 @@ fi
 
 if $startSshd; then
     log "Executing sshd"
-    sudo iptables -L &&
+    doas iptables -L &&
     fail2ban-server -b -x start &&
     exec /usr/sbin/sshd -D
 else
