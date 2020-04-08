@@ -74,12 +74,18 @@ function createUser() {
 
     useradd $useraddOptions $user
 
-    log "Creating directory: [/home/$user]"
     mkdir -p /home/$user
-
-    log "Setting [root:root] as owner of [/home/$user]"
     chown root:root /home/$user
     chmod 755 /home/$user
+
+    mountDir=/home/$user/sftp
+
+    doas mkdir -p /home/$user/sftp
+    chown -R $uid:users /home/$user/sftp
+
+    gcsfuse --version
+    log "Mounting: $GCS_BUCKET"
+    gcsfuse -o allow_other --uid=$uid --gid=$gid --implicit-dirs $GCS_BUCKET $mountDir
 
     # Retrieving user id to use it in chown commands instead of the user name
     # to avoid problems on alpine when the user name contains a '.'
@@ -98,37 +104,6 @@ function createUser() {
         done
         chown $uid /home/$user/.ssh/authorized_keys
         chmod 600 /home/$user/.ssh/authorized_keys
-    fi
-
-    # Make sure dirs exists
-    if [ -n "$dir" ]; then
-        IFS=',' read -a dirArgs <<< $dir
-        for dirPath in ${dirArgs[@]}; do
-            dirPath="/home/$user/$dirPath"
-            if [ ! -d "$dirPath" ]; then
-                log "Creating directory: [$dirPath]"
-                doas mkdir -p $dirPath
-                log "Setting [$uid:users] as owner of [$dirPath]"
-                chown -R $uid:users $dirPath
-            else
-                log "Directory already exists: [$dirPath]"
-            fi
-            log "Setting [root:root] as owner of [$dirPath]"
-            chown root:root $dirPath
-        done
-    fi
-
-    # Make subdirectories if configured
-    if [ -n "$SFTP_MKDIRS" ]; then
-        # Append users from environment variable to final config
-        dirsFromEnv=($SFTP_MKDIRS) # as array
-        for dir in "${dirsFromEnv[@]}"; do
-            dirToMake="/home/$user/$dir"
-            log "Creating directory: [$dirToMake]"
-            doas mkdir -p $dirToMake
-            log "Setting [$uid:users] as owner of [$dirToMake]"
-            chown -R $uid:users $dirToMake
-        done
     fi
 }
 

@@ -1,6 +1,6 @@
-FROM alpine:3.11
+FROM ctrewe/marketplace-partner-hub-gcsfuse:1.0.0
 
-ENV OPENSSH_VERSION=8.1_p1-r0
+VOLUME /config
 
 # Steps done in one RUN layer:
 # - Install packages
@@ -8,7 +8,7 @@ ENV OPENSSH_VERSION=8.1_p1-r0
 # - OpenSSH needs /var/run/sshd to run
 # - Remove generic host keys, entrypoint generates unique keys
 RUN echo "@community http://dl-cdn.alpinelinux.org/alpine/v3.10/community" >> /etc/apk/repositories && \
-    apk add --no-cache bash iptables ip6tables fail2ban python2 shadow@community openssh=${OPENSSH_VERSION} openssh-sftp-server=${OPENSSH_VERSION} doas && \
+    apk add --no-cache bash iptables ip6tables fail2ban python2 shadow@community openssh openssh-sftp-server doas && \
     sed -i 's/GROUP=1000/GROUP=100/' /etc/default/useradd && \
     mkdir -p /var/run/sshd && \
     rm -f /etc/ssh/ssh_host_*key*

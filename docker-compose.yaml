@@ -1,0 +1,10 @@
+version: '3.5'
+
+services:
+  sftp:
+    image: my/sftp-gcsfuse
+    privileged: true
+    environment:
+      SFTP_USERS: foo:bar:1001:100:dev
+    ports:
+      - "2200:22"

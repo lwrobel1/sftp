@@ -20,7 +20,7 @@ LoginGraceTime 60
 
 # Force sftp and chroot jail
 Subsystem sftp internal-sftp
-ForceCommand internal-sftp
+ForceCommand internal-sftp -d /sftp
 ChrootDirectory %h
 
 # Enable this for more logs

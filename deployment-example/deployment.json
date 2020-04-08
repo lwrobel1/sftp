@@ -1,0 +1,128 @@
+{
+    "apiVersion": "apps/v1",
+    "kind": "Deployment",
+    "metadata": {
+        "name": "mph-sftp-gcsfuse-test",
+        "namespace": "marketplace-partner-hub",
+        "labels": {
+            "app": "mph-sftp-gcsfuse-test"
+        }
+    },
+    "spec": {
+        "replicas": 1,
+        "strategy": {
+            "type": "RollingUpdate"
+        },
+        "selector": {
+            "matchLabels": {
+                "app": "mph-sftp-gcsfuse-test"
+            }
+        },
+        "template": {
+            "metadata": {
+                "labels": {
+                    "app": "mph-sftp-gcsfuse-test"
+                }
+            },
+            "spec": {
+                "terminationGracePeriodSeconds": 0,
+                "affinity": {
+                  "nodeAffinity": { 
+                    "preferredDuringSchedulingIgnoredDuringExecution": [
+                      {
+                        "weight": 100,
+                        "preference": {
+                          "matchExpressions": [
+                            {
+                              "key": "preemtible",
+                              "operator": "In",
+                              "values": [
+                                "false"
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                "imagePullSecrets" : [
+                    {
+                      "name": "dockerhub"
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "sa-secret",
+                        "secret": {
+                          "secretName": "marketplace-partner-hub-partner-storage-manager-sa",
+                          "items": [
+                            {
+                                "key": "service.json",
+                                "path": "service.json"
+                            }
+                          ]
+                        }
+                    }
+                ],
+                "containers": [
+                    {
+                        "name": "mph-sftp-gcsfuse-test",
+                        "image": "ctrewe/marketplace-partner-hub-sftp:alpine-3.11-8.1-gcsfuse-dev.1",
+                        "imagePullPolicy": "Always",
+                        "resources": {
+                            "requests": {
+                                "memory": "0",
+                                "cpu": "0"
+                            },
+                            "limits": {
+                                "memory": "1024Mi",
+                                "cpu": "500m"
+                            }
+                        },
+                        "ports": [
+                            {
+                                "containerPort": 22
+                            }
+                        ],
+                        "securityContext": {
+                            "privileged": true,
+                            "capabilities": {
+                                "add": [
+                                    "NET_ADMIN",
+                                    "SYS_ADMIN"
+                                ]
+                            }
+                        },
+                        "env": [
+                            {
+                                "name": "SFTP_USERS",
+                                "valueFrom": {
+                                  "secretKeyRef": {
+                                    "name": "mph-sftp-config-amb-milestone2-dev-90",
+                                    "key": "sftp_users"
+                                  }
+                                }
+                            },
+                            {
+                                "name": "GCS_BUCKET",
+                                "value": "mph-partner-amb-milestone2-dev-90-ec15ed0b"
+                            },
+                            {
+                                "name": "GCP_SERVICE_ACCOUNT_FILE",
+                                "value": "/config/service.json"
+                            }
+                        ],
+                        "volumeMounts": [
+                            {
+                                "name": "sa-secret",
+                                "mountPath": "/config/service.json",
+                                "subPath": "service.json"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}
