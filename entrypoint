@@ -108,13 +108,12 @@ function createUser() {
             if [ ! -d "$dirPath" ]; then
                 log "Creating directory: [$dirPath]"
                 doas mkdir -p $dirPath
-                log "Setting [$uid:users] as owner of [$dirPath]"
-                chown -R $uid:users $dirPath
             else
                 log "Directory already exists: [$dirPath]"
             fi
-            log "Setting [root:root] as owner of [$dirPath]"
-            chown root:root $dirPath
+            log "Setting [$uid:] as owner of [$dirPath]"
+            chown -R $uid: $dirPath
+            chmod -R 755 $dirPath
         done
     fi
 
@@ -126,8 +125,8 @@ function createUser() {
             dirToMake="/home/$user/$dir"
             log "Creating directory: [$dirToMake]"
             doas mkdir -p $dirToMake
-            log "Setting [$uid:users] as owner of [$dirToMake]"
-            chown -R $uid:users $dirToMake
+            log "Setting [$uid:] as owner of [$dirToMake]"
+            chown -R $uid: $dirToMake
         done
     fi
 }
